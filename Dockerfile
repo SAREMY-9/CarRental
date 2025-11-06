@@ -63,4 +63,9 @@ CMD php artisan config:cache && \
     php artisan view:cache && \
     php artisan serve --host=0.0.0.0 --port=8000
 
+
+# Run migrations and start app
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+
+
     
