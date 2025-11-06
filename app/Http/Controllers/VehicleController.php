@@ -9,11 +9,37 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    public function index()
+        public function index(Request $request)
     {
-        $vehicles = Vehicle::with(['type', 'location'])->get();
-        return view('admin.vehicles.index', compact('vehicles'));
+        $query = Vehicle::with(['type', 'location']);
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('make', 'like', '%' . $request->search . '%')
+                ->orWhere('model', 'like', '%' . $request->search . '%')
+                ->orWhere('registration_number', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('vehicle_type_id')) {
+            $query->where('vehicle_type_id', $request->vehicle_type_id);
+        }
+
+        if ($request->filled('location_id')) {
+            $query->where('location_id', $request->location_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $vehicles = $query->get();
+        $types = VehicleType::all();
+        $locations = Location::all();
+
+        return view('admin.vehicles.index', compact('vehicles', 'types', 'locations'));
     }
+
 
     public function create()
     {
