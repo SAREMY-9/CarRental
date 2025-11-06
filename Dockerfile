@@ -1,28 +1,31 @@
 # Start from PHP 8.2 with FPM
 FROM php:8.2-fpm
 
-# Install system dependencies and PostgreSQL driver
+# Install system dependencies, Node.js, npm, and PostgreSQL driver
 RUN apt-get update && apt-get install -y \
-    git zip unzip libpq-dev \
+    git zip unzip libpq-dev nodejs npm \
     && docker-php-ext-install pdo pdo_pgsql
 
-# Copy composer
+# Copy composer from official composer image
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy the app
+# Copy the application files
 COPY . .
 
-# Install PHP dependencies
+# Install PHP dependencies (optimized for production)
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions for Laravel
+# Install and build frontend assets with Vite
+RUN npm install && npm run build
+
+# Set permissions for Laravel storage and cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start the server
+# Run migrations and start the Laravel server
 CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
