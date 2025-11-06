@@ -9,102 +9,34 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    
-    /**
-     * Public listing + search
-     */
-    public function index(Request $request)
+    public function index()
     {
-        $query = Vehicle::with(['type', 'location'])->where('status', 'available');
-
-        if ($request->filled('type')) {
-            $query->where('vehicle_type_id', $request->type);
-        }
-
-        if ($request->filled('location')) {
-            $query->where('location_id', $request->location);
-        }
-
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('make', 'like', "%{$request->search}%")
-                  ->orWhere('model', 'like', "%{$request->search}%")
-                  ->orWhere('registration_number', 'like', "%{$request->search}%");
-            });
-        }
-
-        $vehicles = $query->paginate(10);
-        $types = VehicleType::all();
-        $locations = Location::all();
-
-        return view('vehicles.index', compact('vehicles', 'types', 'locations'));
+        $vehicles = Vehicle::with(['type', 'location'])->get();
+        return view('admin.vehicles.index', compact('vehicles'));
     }
 
-    /**
-     * Admin: create vehicle form
-     */
     public function create()
     {
         $types = VehicleType::all();
         $locations = Location::all();
-        return view('vehicles.create', compact('types', 'locations'));
+        return view('admin.vehicles.create', compact('types', 'locations'));
     }
 
-    /**
-     * Admin: store new vehicle
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'vehicle_type_id' => 'required|exists:vehicle_types,id',
-            'location_id' => 'required|exists:locations,id',
-            'make' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'registration_number' => 'required|unique:vehicles',
-            'year' => 'required|digits:4',
-            'price_per_day' => 'required|numeric|min:0',
+        $validated = $request->validate([
+            'vehicle_type_id' => 'required',
+            'location_id' => 'required',
+            'make' => 'required|string',
+            'model' => 'required|string',
+            'registration_number' => 'required|string|unique:vehicles',
+            'year' => 'required|integer',
+            'price_per_day' => 'required|numeric',
+            'status' => 'required|string',
         ]);
 
-        Vehicle::create($request->all());
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully!');
-    }
+        Vehicle::create($validated);
 
-    /**
-     * Admin: edit form
-     */
-    public function edit(Vehicle $vehicle)
-    {
-        $types = VehicleType::all();
-        $locations = Location::all();
-        return view('vehicles.edit', compact('vehicle', 'types', 'locations'));
-    }
-
-    /**
-     * Admin: update vehicle
-     */
-    public function update(Request $request, Vehicle $vehicle)
-    {
-        $request->validate([
-            'vehicle_type_id' => 'required|exists:vehicle_types,id',
-            'location_id' => 'required|exists:locations,id',
-            'make' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'registration_number' => 'required|unique:vehicles,registration_number,' . $vehicle->id,
-            'year' => 'required|digits:4',
-            'price_per_day' => 'required|numeric|min:0',
-            'status' => 'required|in:available,unavailable',
-        ]);
-
-        $vehicle->update($request->all());
-        return redirect()->route('vehicles.index')->with('success', 'Vehicle updated successfully!');
-    }
-
-    /**
-     * Admin: delete vehicle
-     */
-    public function destroy(Vehicle $vehicle)
-    {
-        $vehicle->delete();
-        return back()->with('success', 'Vehicle deleted successfully!');
+        return redirect()->route('vehicles.index')->with('success', 'Vehicle added successfully.');
     }
 }

@@ -5,8 +5,16 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\VehicleList;
 use App\Http\Controllers\BookingController;
 
+use App\Http\Controllers\VehicleController;
+
 
 Route::get('/', VehicleList::class)->name('home');
+
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('vehicles', VehicleController::class);
+});
+
 
 Route::get('/bookings/create/{vehicle}', [BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
