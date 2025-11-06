@@ -16,41 +16,46 @@
     @endif
 
     <table class="w-full table-auto border-collapse">
-        <thead>
-            <tr class="bg-gray-100 text-left text-gray-700">
-                <th class="p-3 border-b">Make</th>
-                <th class="p-3 border-b">Model</th>
-                <th class="p-3 border-b">Type</th>
-                <th class="p-3 border-b">Location</th>
-                <th class="p-3 border-b">Price/Day</th>
-                <th class="p-3 border-b">Status</th>
-                <th class="p-3 border-b text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($vehicles as $vehicle)
-            <tr class="hover:bg-gray-50">
-                <td class="p-3 border-b">{{ $vehicle->make }}</td>
-                <td class="p-3 border-b">{{ $vehicle->model }}</td>
-                <td class="p-3 border-b">{{ $vehicle->type->name ?? 'N/A' }}</td>
-                <td class="p-3 border-b">{{ $vehicle->location->name ?? 'N/A' }}</td>
-                <td class="p-3 border-b">Ksh {{ number_format($vehicle->price_per_day, 2) }}</td>
-                <td class="p-3 border-b">
-                    <span class="px-2 py-1 rounded text-white {{ $vehicle->status === 'available' ? 'bg-green-500' : 'bg-red-500' }}">
-                        {{ ucfirst($vehicle->status) }}
-                    </span>
-                </td>
-                <td class="p-3 border-b text-center">
-                    <a href="{{ route('vehicles.edit', $vehicle->id) }}" class="text-blue-600 hover:underline font-medium">Edit</a>
-                    <form action="{{ route('vehicles.destroy', $vehicle->id) }}" method="POST" class="inline-block ml-3" onsubmit="return confirm('Are you sure you want to delete this vehicle?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:underline font-medium">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <thead>
+        <tr class="bg-gray-100 text-left text-gray-700">
+            <th class="p-3 border-b w-12 text-center">#</th>
+            <th class="p-3 border-b">Make</th>
+            <th class="p-3 border-b">Model</th>
+            <th class="p-3 border-b">Type</th>
+            <th class="p-3 border-b">Location</th>
+            <th class="p-3 border-b">Price/Day</th>
+            <th class="p-3 border-b">Status</th>
+            <th class="p-3 border-b text-center">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($vehicles as $index => $vehicle)
+        <tr class="hover:bg-gray-50">
+            <td class="p-3 border-b text-center font-medium text-gray-700">
+                {{ $index + 1 }}
+            </td>
+            <td class="p-3 border-b">{{ $vehicle->make }}</td>
+            <td class="p-3 border-b">{{ $vehicle->model }}</td>
+            <td class="p-3 border-b">{{ $vehicle->type->name ?? 'N/A' }}</td>
+            <td class="p-3 border-b">{{ $vehicle->location->name ?? 'N/A' }}</td>
+            <td class="p-3 border-b">Ksh {{ number_format($vehicle->price_per_day, 2) }}</td>
+            <td class="p-3 border-b">
+                <span class="px-2 py-1 rounded text-white {{ $vehicle->status === 'available' ? 'bg-green-500' : 'bg-red-500' }}">
+                    {{ ucfirst($vehicle->status) }}
+                </span>
+            </td>
+            <td class="p-3 border-b text-center">
+                <a href="{{ route('vehicles.edit', $vehicle->id) }}" class="text-blue-600 hover:underline font-medium">Edit</a>
+                <form action="{{ route('vehicles.destroy', $vehicle->id) }}" method="POST" class="inline-block ml-3" onsubmit="return confirm('Are you sure you want to delete this vehicle?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-600 hover:underline font-medium">Delete</button>
+                </form>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
 </div>
 @endsection
