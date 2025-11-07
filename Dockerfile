@@ -30,6 +30,6 @@ EXPOSE 8000
 # Run migrations and start the Laravel server
 #CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
 #CMD php artisan migrate:fresh --seed && php artisan serve --host=0.0.0.0 --port=8000
-#CMD php artisan migrate --force && php artisan db:seed  --force && php artisan serve --host=0.0.0.0 --port=8000
+CMD php artisan migrate --force && php artisan db:seed  --force && php artisan serve --host=0.0.0.0 --port=8000
 
-CMD php artisan migrate --force && php artisan db:seed --class=VehicleTypeSeeder --force && php artisan db:seed --class=LocationSeeder --force && php artisan serve --host=0.0.0.0 --port=8000
+#CMD php artisan migrate --force && php artisan db:seed --class=VehicleTypeSeeder --force && php artisan db:seed --class=LocationSeeder --force && php artisan serve --host=0.0.0.0 --port=8000
