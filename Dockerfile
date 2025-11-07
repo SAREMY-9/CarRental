@@ -16,7 +16,13 @@ WORKDIR /var/www/html
 COPY . .
 
 # Install PHP dependencies (optimized for production)
+# This step creates the vendor directory and fetches dependencies
 RUN composer install --no-dev --optimize-autoloader
+
+# --- FIX INSERTED HERE ---
+# Force Composer to rebuild the autoload map to ensure global helpers (like fake()) are loaded
+RUN composer dump-autoload
+# -------------------------
 
 # Install and build frontend assets with Vite
 RUN npm install && npm run build
@@ -28,8 +34,4 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 EXPOSE 8000
 
 # Run migrations and start the Laravel server
-#CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
-#CMD php artisan migrate:fresh --seed && php artisan serve --host=0.0.0.0 --port=8000
 CMD php artisan migrate --force && php artisan db:seed  --force && php artisan serve --host=0.0.0.0 --port=8000
-
-#CMD php artisan migrate --force && php artisan db:seed --class=VehicleTypeSeeder --force && php artisan db:seed --class=LocationSeeder --force && php artisan serve --host=0.0.0.0 --port=8000
