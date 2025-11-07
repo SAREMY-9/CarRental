@@ -17,7 +17,9 @@ COPY . .
 
 # Install PHP dependencies (optimized for production)
 # This step creates the vendor directory and fetches dependencies
-RUN composer install --no-dev --optimize-autoloader
+#RUN composer install --no-dev --optimize-autoloader
+RUN composer install --optimize-autoloader
+
 
 # --- FIX INSERTED HERE ---
 # Force Composer to rebuild the autoload map to ensure global helpers (like fake()) are loaded
