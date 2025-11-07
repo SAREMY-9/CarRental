@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\VehicleList;
 use App\Http\Controllers\BookingController;
 
+
 use App\Http\Controllers\VehicleController;
 
 
@@ -16,9 +17,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 
+// Booking routes
+Route::middleware('auth')->group(function () {
+    Route::get('/bookings', [BookingController::class, 'index']);
+    Route::post('/bookings', [BookingController::class, 'store']);
+});
 
-Route::get('/bookings/create/{vehicle}', [BookingController::class, 'create'])->name('bookings.create');
-Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/create/{vehicle}', [BookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings/store', [BookingController::class, 'store'])->name('bookings.store');
+});
+
 
 
 Route::get('/dashboard', function () {

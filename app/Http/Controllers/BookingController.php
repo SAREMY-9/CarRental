@@ -4,87 +4,92 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Vehicle;
+use App\Models\Location;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
     /**
-     * Show current user's bookings
+     * Show the booking form.
      */
-    public function index()
+    public function create(Vehicle $vehicle)
     {
-        $bookings = Booking::with('vehicle')
-            ->where('user_id', auth()->id())
-            ->latest()
+        $locations = Location::all();
+
+        return view('bookings.create', [
+            'vehicle' => $vehicle,
+            'locations' => $locations,
+        ]);
+    }
+
+    /**
+     * Store a new booking.
+     */
+        public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'pickup_location_id' => 'required|exists:locations,id',
+            'dropoff_location_id' => 'nullable|exists:locations,id',
+            'start_date' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now',
+            'end_date' => 'required|date_format:Y-m-d\TH:i|after:start_date',
+        ]);
+
+        $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
+
+        // Convert input from datetime-local to Carbon objects
+        $start = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $validated['start_date']);
+        $end = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $validated['end_date']);
+
+        // Check overlap
+        $overlap = \App\Models\Booking::where('vehicle_id', $vehicle->id)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($query) use ($start, $end) {
+                $query->whereBetween('start_date', [$start, $end])
+                    ->orWhereBetween('end_date', [$start, $end]);
+            })
+            ->exists();
+
+        if ($overlap) {
+            return back()
+                ->withErrors(['start_date' => 'Vehicle is not available for the selected dates.'])
+                ->withInput();
+        }
+
+        // Calculate price
+        $days = max($start->diffInDays($end), 1);
+        $totalPrice = $days * ($vehicle->price_per_day ?? 0);
+
+        // Save booking
+        \App\Models\Booking::create([
+            'vehicle_id' => $vehicle->id,
+            'user_id' => auth()->id(),
+            'pickup_location_id' => $validated['pickup_location_id'],
+            'dropoff_location_id' => $validated['dropoff_location_id'] ?? $validated['pickup_location_id'],
+            'start_date' => $start,
+            'end_date' => $end,
+            'total_price' => $totalPrice,
+            'status' => 'pending',
+        ]);
+
+        return redirect()
+    ->route('bookings.index', $validated['vehicle_id'])
+    ->with('success', 'Booking created successfully!');
+
+            
+    }
+
+    /**
+     * Show all bookings.
+     */
+        public function index()
+    {
+        $bookings = \App\Models\Booking::with(['user', 'vehicle', 'pickupLocation', 'dropoffLocation'])
+            ->orderBy('created_at', 'desc') // show newest first
             ->get();
 
         return view('bookings.index', compact('bookings'));
     }
 
-    /**
-     * Show booking form for selected vehicle
-     */
-    public function create(Vehicle $vehicle)
-    {
-        return view('bookings.create', compact('vehicle'));
-    }
-
-    /**
-     * Store a new booking request
-     */
-    public function store(Request $request, Vehicle $vehicle)
-    {
-        $request->validate([
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after:start_date',
-        ]);
-
-        // Check for existing bookings overlap
-        $overlap = Booking::where('vehicle_id', $vehicle->id)
-            ->where(function ($q) use ($request) {
-                $q->whereBetween('start_date', [$request->start_date, $request->end_date])
-                  ->orWhereBetween('end_date', [$request->start_date, $request->end_date]);
-            })
-            ->exists();
-
-        if ($overlap) {
-            return back()->with('error', 'This vehicle is already booked for the selected dates.');
-        }
-
-        $days = Carbon::parse($request->start_date)->diffInDays(Carbon::parse($request->end_date)) ?: 1;
-        $total = $days * $vehicle->price_per_day;
-
-        Booking::create([
-            'user_id' => auth()->id(),
-            'vehicle_id' => $vehicle->id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'total_price' => $total,
-            'status' => 'pending',
-        ]);
-
-        return redirect()->route('bookings.index')
-            ->with('success', 'Booking created successfully. Awaiting approval.');
-    }
-
-    /**
-     * Admin: approve booking
-     */
-    public function approve(Booking $booking)
-    {
-        $booking->update(['status' => 'approved']);
-        $booking->vehicle->update(['status' => 'unavailable']);
-        return back()->with('success', 'Booking approved successfully!');
-    }
-
-    /**
-     * Admin: mark returned
-     */
-    public function markReturned(Booking $booking)
-    {
-        $booking->update(['status' => 'returned']);
-        $booking->vehicle->update(['status' => 'available']);
-        return back()->with('success', 'Vehicle marked as returned.');
-    }
 }
