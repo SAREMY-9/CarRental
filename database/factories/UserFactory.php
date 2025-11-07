@@ -7,11 +7,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-// The following lines were removed as they are no longer needed/cause errors in modern Laravel:
-// use Faker\Generator as Faker;
-// private Faker $faker;
-// public function __construct() { ... }
-
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
@@ -22,12 +17,12 @@ class UserFactory extends Factory
      *
      * @var string
      */
-    protected $model = User::class; // Kept, though often optional if named correctly.
+    protected $model = User::class;
 
     /**
      * The current password being used by the factory.
      */
-    protected static ?string $password;
+    protected static ?string $password = null;
 
     /**
      * Define the model's default state.
@@ -37,9 +32,8 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            // Use the globally available fake() helper function instead of $this->faker
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
@@ -53,6 +47,16 @@ class UserFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Define an admin user state (optional).
+     */
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_admin' => true,
         ]);
     }
 }
