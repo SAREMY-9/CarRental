@@ -73,10 +73,8 @@ class BookingController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()
-    ->route('bookings.index', $validated['vehicle_id'])
-    ->with('success', 'Booking created successfully!');
-
+       return redirect('/')
+    ->with('success', 'Vehicle booked successfully!');
             
     }
 

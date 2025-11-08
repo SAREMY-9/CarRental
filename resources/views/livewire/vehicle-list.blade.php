@@ -1,6 +1,12 @@
 <div class="p-6">
     <h2 class="text-2xl font-bold mb-4">Available Vehicles</h2>
 
+        @if (session('success'))
+        <div class="alert alert-success" role="alert">
+            {{ session('success') }}
+        </div>
+         @endif
+         
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div>
             <input wire:model="search" type="text" placeholder="Search make/model..." class="w-full border rounded px-3 py-2">

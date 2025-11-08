@@ -52,7 +52,8 @@
                     <i data-lucide="car"></i> <span>Vehicles</span>
                 </a>
 
-                <a href="" 
+
+                <a href="{{ route('bookings.index') }}" 
                    class="flex items-center gap-2 px-3 py-2 rounded-lg 
                           text-gray-700 dark:text-gray-300 
                           hover:bg-blue-500 hover:text-white transition">

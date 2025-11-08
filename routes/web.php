@@ -14,18 +14,21 @@ Route::get('/', VehicleList::class)->name('home');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('vehicles', VehicleController::class);
+    
+});
+
+
+Route::middleware(['auth', 'admin'])->group(function () {
+
+// GET route for the bookings index page
+Route::get('/bookings', [App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
 });
 
 
 // Booking routes
-Route::middleware('auth')->group(function () {
-    Route::get('/bookings', [BookingController::class, 'index']);
-    Route::post('/bookings', [BookingController::class, 'store']);
-});
-
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+   // Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create/{vehicle}', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings/store', [BookingController::class, 'store'])->name('bookings.store');
 });
