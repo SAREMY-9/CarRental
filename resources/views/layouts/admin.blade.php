@@ -105,6 +105,7 @@
             <!-- Content -->
             <main class="p-6 overflow-y-auto flex-1">
                 @yield('content')
+                
             </main>
         </div>
     </div>

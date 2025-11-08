@@ -1,8 +1,16 @@
 <div class="p-6">
     <h2 class="text-2xl font-bold mb-4">Available Vehicles</h2>
 
-    {{-- Session messages are handled in the parent Blade file, not usually here --}}
-    {{-- @if (session('success')) ... @endif --}}
+   
+        @if (session('success'))
+
+    <div class="alert alert-success" role="alert">
+
+    {{ session('success') }}
+
+    </div>
+
+    @endif 
          
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div>

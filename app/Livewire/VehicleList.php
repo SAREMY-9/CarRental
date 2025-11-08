@@ -46,4 +46,12 @@ class VehicleList extends Component
             
         ]) ->layout('layouts.app');
     }
+
+    // Method to clear all filters
+    public function resetFilters()
+    {
+        $this->reset(['search', 'type', 'location']);
+        $this->resetPage();
+    }
+
 }
