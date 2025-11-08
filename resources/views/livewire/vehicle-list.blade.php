@@ -1,19 +1,18 @@
 <div class="p-6">
     <h2 class="text-2xl font-bold mb-4">Available Vehicles</h2>
 
-        @if (session('success'))
-        <div class="alert alert-success" role="alert">
-            {{ session('success') }}
-        </div>
-         @endif
+    {{-- Session messages are handled in the parent Blade file, not usually here --}}
+    {{-- @if (session('success')) ... @endif --}}
          
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div>
-            <input wire:model="search" type="text" placeholder="Search make/model..." class="w-full border rounded px-3 py-2">
+            {{-- Maps to $search public property --}}
+            <input wire:model.live="search" type="text" placeholder="Search make/model/reg..." class="w-full border rounded px-3 py-2">
         </div>
 
         <div>
-            <select wire:model="type" class="w-full border rounded px-3 py-2">
+            {{-- Maps to $type public property (used for vehicle_type_id) --}}
+            <select wire:model.live="type" class="w-full border rounded px-3 py-2">
                 <option value="">All Types</option>
                 @foreach($types as $t)
                     <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -22,7 +21,8 @@
         </div>
 
         <div>
-            <select wire:model="location" class="w-full border rounded px-3 py-2">
+            {{-- Maps to $location public property (used for location_id) --}}
+            <select wire:model.live="location" class="w-full border rounded px-3 py-2">
                 <option value="">All Locations</option>
                 @foreach($locations as $l)
                     <option value="{{ $l->id }}">{{ $l->name }}</option>
@@ -31,14 +31,17 @@
         </div>
 
         <div>
-            <button wire:click="$set('type','');$set('location','');$set('search','')" class="bg-gray-200 px-3 py-2 rounded w-full">Reset</button>
+            {{-- Calls the resetFilters method in the component --}}
+            <button wire:click="resetFilters" class="bg-gray-200 px-3 py-2 rounded w-full hover:bg-gray-300">Reset Filters</button>
         </div>
     </div>
+    
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         @forelse($vehicles as $vehicle)
             <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition">
                 <h3 class="font-semibold text-lg">{{ $vehicle->make }} {{ $vehicle->model }}</h3>
+                <p class="text-sm text-gray-600">Reg: {{ $vehicle->registration_number }}</p>
                 <p class="text-sm text-gray-600">Type: {{ $vehicle->type->name }}</p>
                 <p class="text-sm text-gray-600">Location: {{ $vehicle->location->name }}</p>
                 <p class="text-blue-600 font-bold mt-2">KES {{ number_format($vehicle->price_per_day) }}/day</p>
@@ -48,11 +51,12 @@
                 </a>
             </div>
         @empty
-            <p class="col-span-3 text-center text-gray-500">No vehicles found.</p>
+            <p class="col-span-3 text-center text-gray-500">No vehicles found matching your criteria.</p>
         @endforelse
     </div>
 
     <div class="mt-6">
+        {{-- Livewire pagination links --}}
         {{ $vehicles->links() }}
     </div>
 </div>

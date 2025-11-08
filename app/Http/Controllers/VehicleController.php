@@ -21,6 +21,7 @@ class VehicleController extends Controller
             });
         }
 
+        
         if ($request->filled('vehicle_type_id')) {
             $query->where('vehicle_type_id', $request->vehicle_type_id);
         }
