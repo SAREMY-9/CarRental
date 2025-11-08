@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\VehicleList;
 use App\Http\Controllers\BookingController;
-
+use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\VehicleController;
 
@@ -22,6 +22,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 // GET route for the bookings index page
 Route::get('/bookings', [App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
 });
 
 
