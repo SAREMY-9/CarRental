@@ -42,6 +42,10 @@
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>
+
+            <x-responsive-nav-link :href="route('register')">
+                        {{ __('Dont have an account?') }}
+                    </x-responsive-nav-link>
         </div>
     </form>
 </x-guest-layout>
