@@ -6,13 +6,12 @@ use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Models\Location;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    /**
-     * Show the booking form.
-     */
+    // Show booking form
     public function create(Vehicle $vehicle)
     {
         $locations = Location::all();
@@ -23,10 +22,8 @@ class BookingController extends Controller
         ]);
     }
 
-    /**
-     * Store a new booking.
-     */
-        public function store(Request $request)
+    // Store booking and redirect to payment
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
@@ -38,31 +35,28 @@ class BookingController extends Controller
 
         $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
 
-        // Convert input from datetime-local to Carbon objects
-        $start = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $validated['start_date']);
-        $end = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $validated['end_date']);
+        // Convert to Carbon
+        $start = Carbon::createFromFormat('Y-m-d\TH:i', $validated['start_date']);
+        $end = Carbon::createFromFormat('Y-m-d\TH:i', $validated['end_date']);
 
         // Check overlap
-        $overlap = \App\Models\Booking::where('vehicle_id', $vehicle->id)
+        $overlap = Booking::where('vehicle_id', $vehicle->id)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start_date', [$start, $end])
-                    ->orWhereBetween('end_date', [$start, $end]);
-            })
-            ->exists();
+                      ->orWhereBetween('end_date', [$start, $end]);
+            })->exists();
 
         if ($overlap) {
-            return back()
-                ->withErrors(['start_date' => 'Vehicle is not available for the selected dates.'])
-                ->withInput();
+            return back()->withErrors(['start_date' => 'Vehicle not available for selected dates.'])->withInput();
         }
 
         // Calculate price
         $days = max($start->diffInDays($end), 1);
         $totalPrice = $days * ($vehicle->price_per_day ?? 0);
 
-        // Save booking
-        \App\Models\Booking::create([
+        // Create booking with pending payment
+        $booking = Booking::create([
             'vehicle_id' => $vehicle->id,
             'user_id' => auth()->id(),
             'pickup_location_id' => $validated['pickup_location_id'],
@@ -73,21 +67,55 @@ class BookingController extends Controller
             'status' => 'pending',
         ]);
 
-       return redirect('/')
-    ->with('success', 'Vehicle booked successfully!');
-            
+        // Redirect to payment
+        return redirect()->route('bookings.pay', $booking->id);
     }
 
-    /**
-     * Show all bookings.
-     */
-        public function index()
+    // Initiate Paystack payment
+    public function initiatePayment(Booking $booking)
     {
-        $bookings = \App\Models\Booking::with(['user', 'vehicle', 'pickupLocation', 'dropoffLocation'])
-            ->orderBy('created_at', 'desc') // show newest first
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            'Accept' => 'application/json',
+        ])->post('https://api.paystack.co/transaction/initialize', [
+            'email' => $booking->user->email,
+            'amount' => $booking->total_price * 100, // in kobo
+            'reference' => 'BOOKING_' . $booking->id,
+            'callback_url' => route('bookings.verify', $booking->id),
+        ]);
+
+        if ($response->successful()) {
+            $booking->update(['payment_reference' => $response['data']['reference']]);
+            return redirect($response['data']['authorization_url']);
+        }
+
+        return redirect('/')->with('error', 'Payment initialization failed.');
+    }
+
+    // Verify Paystack payment
+    public function verifyPayment(Booking $booking)
+    {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            'Accept' => 'application/json',
+        ])->get("https://api.paystack.co/transaction/verify/{$booking->payment_reference}");
+
+        if ($response->successful() && $response['data']['status'] === 'success') {
+            $booking->update(['status' => 'confirmed']);
+            return redirect('/')->with('success', 'Payment successful and booking confirmed!');
+        }
+
+        
+        return redirect('/')->with('error', 'Payment verification failed.');
+    }
+
+    // List all bookings
+    public function index()
+    {
+        $bookings = Booking::with(['user', 'vehicle', 'pickupLocation', 'dropoffLocation'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return view('bookings.index', compact('bookings'));
     }
-
 }

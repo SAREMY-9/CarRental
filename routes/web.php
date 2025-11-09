@@ -23,6 +23,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 // GET route for the bookings index page
 Route::get('/bookings', [App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
+
+
+
 });
 
 
@@ -32,6 +35,12 @@ Route::middleware(['auth'])->group(function () {
    // Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/create/{vehicle}', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings/store', [BookingController::class, 'store'])->name('bookings.store');
+
+
+     // Paystack payment routes
+    Route::get('/bookings/pay/{booking}', [BookingController::class, 'initiatePayment'])->name('bookings.pay');
+    Route::get('/bookings/verify/{booking}', [BookingController::class, 'verifyPayment'])->name('bookings.verify');
+
 });
 
 

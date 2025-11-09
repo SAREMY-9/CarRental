@@ -31,6 +31,9 @@ return new class extends Migration
                 
                 // Price
                 $table->decimal('total_price', 8, 2)->nullable();
+
+                $table->string('payment_reference')->nullable();
+
                 
                 $table->timestamps();
             });
