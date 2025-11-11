@@ -34,7 +34,7 @@ ENV PAYSTACK_SECRET_KEY=sk_test_e615c91dac8a9ccf9f3bb27fcbc860ab44aa2c7c
 ENV PAYSTACK_PAYMENT_URL=https://api.paystack.co
 
 # Copy supervisor config
-COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Run supervisor to manage multiple processes
 CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
