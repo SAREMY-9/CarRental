@@ -34,5 +34,6 @@ ENV PAYSTACK_SECRET_KEY=sk_test_e615c91dac8a9ccf9f3bb27fcbc860ab44aa2c7c
 ENV PAYSTACK_PAYMENT_URL=https://api.paystack.co
 
 # Run migrations with seeders, then start Laravel server
-CMD php artisan migrate:fresh --seed --force && \
+
+CMD php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=8000
