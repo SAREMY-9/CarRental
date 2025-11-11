@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <form action="{{ route('vehicles.update', $vehicle->id) }}" method="POST">
+    <form action="{{ route('vehicles.update', $vehicle->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -75,6 +75,21 @@
                     <option value="unavailable" {{ $vehicle->status == 'unavailable' ? 'selected' : '' }}>Unavailable</option>
                 </select>
             </div>
+        </div>
+
+            
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Vehicle Image</label>
+            @if ($vehicle->image)
+                <div class="mb-2">
+                    <img src="{{ asset($vehicle->image) }}" alt="Vehicle Image" class="w-48 h-32 object-cover rounded">
+                </div>
+            @endif
+            <input type="file" name="image" class="w-full border rounded px-3 py-2 mt-1">
+            <p class="text-xs text-gray-500 mt-1">Leave blank to keep current image</p>
+            @error('image')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <div class="mt-6 flex justify-between">

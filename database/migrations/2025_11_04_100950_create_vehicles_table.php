@@ -21,6 +21,7 @@ return new class extends Migration
         $table->year('year');
         $table->decimal('price_per_day', 10, 2);
         $table->enum('status', ['available', 'unavailable'])->default('available');
+        $table->string('image')->nullable(); 
         $table->timestamps();
         });
     }

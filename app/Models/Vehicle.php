@@ -15,7 +15,8 @@ class Vehicle extends Model
         'registration_number',
         'year',
         'price_per_day',
-        'status'
+        'status',
+        'image'
     ];
 
     public function type()
@@ -32,4 +33,16 @@ class Vehicle extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    // app/Models/Vehicle.php
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image && file_exists(public_path($this->image))) {
+            return asset($this->image);
+        }
+
+        return asset('images/default-car.jpg'); // fallback image in /public/images
+    }
+
 }

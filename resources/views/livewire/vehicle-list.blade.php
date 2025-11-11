@@ -147,9 +147,7 @@
             <a href="#available-vehicles" class="bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-indigo-700 transition">
                 Find My Car
             </a>
-            <p class="mt-8 text-sm text-gray-500">© {{ date('Y') }} Carental. All rights reserved.</p>
-           <a href ="https://bytestech.vercel.app"> <p class="mt-2 text-sm text-white-500">Powered By BytesTechnologies.</p> </a>
-       
+            <p class="mt-8 text-sm text-gray-500">© {{ date('Y') }} Rently. All rights reserved.</p>
         </div>
     </footer>
 </div>

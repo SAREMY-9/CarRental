@@ -72,24 +72,27 @@ class BookingController extends Controller
     }
 
     // Initiate Paystack payment
-    public function initiatePayment(Booking $booking)
+        public function initiatePayment(Booking $booking)
     {
+        $reference = 'BOOKING_' . $booking->id . '_' . time(); // unique reference
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             'Accept' => 'application/json',
         ])->post('https://api.paystack.co/transaction/initialize', [
             'email' => $booking->user->email,
-            'amount' => $booking->total_price * 100, // in kobo
-            'reference' => 'BOOKING_' . $booking->id,
-            'callback_url' => route('bookings.verify', $booking->id),
+            'amount' => (int) ($booking->total_price * 100), // kobo
+            'reference' => $reference,
+            'callback_url' => route('bookings.verify', ['booking' => $booking]),
         ]);
 
-        if ($response->successful()) {
-            $booking->update(['payment_reference' => $response['data']['reference']]);
+        if ($response->successful() && $response['status']) {
+            $booking->update(['payment_reference' => $reference]);
             return redirect($response['data']['authorization_url']);
         }
 
-        return redirect('/')->with('error', 'Payment initialization failed.');
+        // dump for debugging
+        dd($response->body());
     }
 
     // Verify Paystack payment

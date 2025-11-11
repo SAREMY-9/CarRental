@@ -60,7 +60,16 @@ class VehicleController extends Controller
             'year' => 'required|integer',
             'price_per_day' => 'required|numeric',
             'status' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        
+            if ($request->hasFile('image')) {
+            $filename = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('uploads/vehicles'), $filename);
+            $validated['image'] = 'uploads/vehicles/' . $filename;
+            }
+
 
         Vehicle::create($validated);
 
@@ -85,7 +94,20 @@ class VehicleController extends Controller
             'year' => 'required|integer',
             'price_per_day' => 'required|numeric',
             'status' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+
+            if ($request->hasFile('image')) {
+            // delete old image if exists
+            if ($vehicle->image && file_exists(public_path($vehicle->image))) {
+                unlink(public_path($vehicle->image));
+            }
+
+            $filename = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('uploads/vehicles'), $filename);
+            $validated['image'] = 'uploads/vehicles/' . $filename;
+            }
 
         $vehicle->update($validated);
 
